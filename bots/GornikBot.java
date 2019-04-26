@@ -19,8 +19,8 @@ public class GornikBot extends Bot {
     // variable to hold if a bullet is close
     private boolean bulletClose;
 
-    // variable to determine whether the bot is stuck
-    private boolean isStuck;
+    //  stores last x and y to check whether im not moving or not
+    double[] prevCoordinates = new double[2]; // 0. X, 1. Y
 
     /**
      * This method is called at the beginning of each round. Use it to perform
@@ -71,8 +71,7 @@ public class GornikBot extends Bot {
     @Override
     public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets) {
         bulletClose = false;
-        isStuck = false;
-        System.out.println(me.getX());
+        //System.out.println(me.getX());
 
         // finding the closest bot to me
         BotInfo closestBot = pikachuHelper.findClosest(me, liveBots);
@@ -130,82 +129,58 @@ public class GornikBot extends Bot {
         // if my bot is stuck either at the edge of the screen or to a different bot
         // Moving bot if trapped at either the left or right edges of the screen [NEED TO BE FIXED]
         if (!bulletClose) {
-            if (me.getX() <= 5) {
+            if (me.getX() <= BattleBotArena.LEFT_EDGE + 5) {
                 System.out.println("AT LEFT EDGE");
-                isStuck = true;
                 return BattleBotArena.RIGHT;
-            } else if (me.getX() == BattleBotArena.RIGHT_EDGE) {
+            }
+
+             if (me.getX() >= BattleBotArena.RIGHT_EDGE - 35) {
                 // if theres a bot to my left while stuck
-                if (closestBot.getX() < me.getX()) {
-                    System.out.println("BOT TO MY LEFT MOVING UP");
-                    return BattleBotArena.UP;
-                }
+//                if (closestBot.getX() < me.getX()) {
+//                    System.out.println("BOT TO MY LEFT MOVING UP");
+//                    return BattleBotArena.UP;
+//                }
                 System.out.println("AT RIGHT EDGE");
                 return BattleBotArena.LEFT;
+            }
 
-            } else if (me.getY() == BattleBotArena.TOP_EDGE) {
+            else if (me.getY() <= BattleBotArena.TOP_EDGE + 5) {
+                 System.out.println("AT TOP EDGE");
                 return BattleBotArena.DOWN;
-            } else if (me.getY() == BattleBotArena.BOTTOM_EDGE) {
+            }
+
+            else if (me.getY() >= BattleBotArena.BOTTOM_EDGE - 35) {
+                 System.out.println("AT BOTTOM EDGE");
                 return BattleBotArena.UP;
-            } else {
-                isStuck = false;
             }
         }
 
+        System.out.println("PREV X: " + prevCoordinates[0] + "X NOW: " + me.getX());
+        System.out.println("PREV Y: " + prevCoordinates[1] + "Y NOW: " + me.getY());
+
         //System.out.println("D: " + pikachuHelper.calcDistance(me.getX(), me.getY(), stuckBot.getX(), stuckBot.getY()));
-        //checking if im stuck
-        if (BotHelper.manhattanDist(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS * 2 + 10) {
+        //checking if im stuck or if im not moving
+        if (BotHelper.manhattanDist(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS * 2 + 10 ) { //|| prevCoordinates[0] == me.getX() && prevCoordinates[1] == me.getY()
             System.out.println("STUCK!");
 
             if (!bulletClose) {
-//                         checking what direction the bot is at
+//                         checking what direction the bot facing me from
                 if (me.getX() + Bot.RADIUS > closestBot.getX()) {
                     // if bot is on my left turning away
-                    System.out.println("NOT STUCK RIGHT!");
+
+                    // ensuring the i'm not at the edge of the screen
+                    //if()
+
+                    System.out.println("HE'S STUCK TO MY LEFT, MOVING RIGHT!");
                     return BattleBotArena.RIGHT;
                 } else {
-                    System.out.println("NOT STUCK LEFT!");
+                    System.out.println("HE'S STUCK TO MY RIGHT, MOVING LEFT!");
                     return BattleBotArena.LEFT;
                 }
             }
-
-
-//            System.out.println("M: " + BotHelper.manhattanDist(me.getX(), me.getY(), stuckBot.getX(), stuckBot.getY()));
-
-            // overlapping with a different bot
-//                if(pikachuHelper.calcDistance(me.getX(), me.getY(), stuckBot.getX(), stuckBot.getY()) <= Bot.RADIUS*2)
-//                    isStuck = true;
-//                if (pikachuHelper.calcDisplacement(me.getX(), stuckBot.getX()) == 0) {
-//                    System.out.println("STUCK! X");
-//                    // checking what direction the bot is at
-//                    if (me.getX() + Bot.RADIUS > stuckBot.getX()) {
-//                        // if bot is on my left turning away
-//                        return BattleBotArena.RIGHT;
-//                    } else {
-//                        return BattleBotArena.LEFT;
-//                    }
-//                } else if(pikachuHelper.calcDisplacement(me.getY(), stuckBot.getY()) == 0) {
-//                    System.out.println("STUCK! y");
-//                    // checking what direction the bot is at
-//                    if (me.getY() + Bot.RADIUS > stuckBot.getY()) {
-//                        // if bot is on my left turning away
-//                        return BattleBotArena.DOWN;
-//                    } else {
-//                        return BattleBotArena.UP;
-//                    }
-//                }
         }
 
-
-        /*
-        // checking if i bump into another bot and move away
-        if(pikachuHelper.calcDistance(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS*2) {
-            System.out.println("Bumping into bot");
-            // checking from what direction i bump into the bot+
-        }
-        */
-
-        // Chasing other bots
+        // Chasing other bots if they're within range
         double dispX = pikachuHelper.calcDisplacement(me.getX() + Bot.RADIUS, closestBot.getX());
         double dispY = pikachuHelper.calcDisplacement(me.getY() + Bot.RADIUS, closestBot.getY());
         double distanceFromBot = pikachuHelper.calcDistance(me.getX() + Bot.RADIUS, me.getY() +
@@ -216,11 +191,11 @@ public class GornikBot extends Bot {
 
         // while NOT at a distance of 50 from the bot // Note: liveBots is always the same even after overheating
         // which causes my bot to constantly move back and forth (unstable)
-        if (distanceFromBot > 120 && liveBots.length != 0) {
-            System.out.println("dfb: " + distanceFromBot);
+        if (distanceFromBot > 100 && liveBots.length != 0) {
+//            System.out.println("dfb: " + distanceFromBot);
             //System.out.println("Live bots: " + liveBots.length + " Dead: " + deadBots.length);
             // Ensuring no bullets are nearby before aligning the bot
-            if (!isStuck && !bulletClose) {
+            if (!bulletClose) {
                 // if my bot is NOT aligned with the battle bot (not accurate since the bot is always moving therefore I use range)
                 // if aligned over x axis
                 if (me.getX() >= closestBot.getX() - 80 && me.getX() <= closestBot.getX() + 80) {
@@ -252,10 +227,6 @@ public class GornikBot extends Bot {
 
         // shooting occurs here once the required distance has met
         else {
-            // for accuracy purposes, can add me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15
-            if (true) {
-                // Killing bots near my range
-                if (!isStuck) {
                     //System.out.println("SHOOT");
                     // checking from what direction i face the bot
                     // NOTE: use range to check whether the bot is above/below/front/behind+
@@ -270,7 +241,7 @@ public class GornikBot extends Bot {
                             return BattleBotArena.FIREDOWN;
                         }
                     } else if (me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15) {
-                        System.out.println("Aligned Y");
+                        //System.out.println("Aligned Y");
                         if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) { // farther apart from the bot
                             System.out.println("He's to my left");
                             return BattleBotArena.FIRELEFT;
@@ -304,11 +275,10 @@ public class GornikBot extends Bot {
 //                            return BattleBotArena.FIREDOWN;
 //                        }
 //                    }
-                }
-            }
         }
 
-
+        prevCoordinates[0] = me.getX();
+        prevCoordinates[1] = me.getY();
         return 0;
     }
 
