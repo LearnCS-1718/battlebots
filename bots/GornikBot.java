@@ -66,7 +66,6 @@ public class GornikBot extends Bot {
 //    Can be later replaced.
     /*
         for(Bullet bullet: bullets) {
-
         }
         */
     @Override
@@ -202,7 +201,6 @@ public class GornikBot extends Bot {
         // checking if i bump into another bot and move away
         if(pikachuHelper.calcDistance(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS*2) {
             System.out.println("Bumping into bot");
-
             // checking from what direction i bump into the bot+
         }
         */
@@ -218,14 +216,14 @@ public class GornikBot extends Bot {
 
         // while NOT at a distance of 50 from the bot // Note: liveBots is always the same even after overheating
         // which causes my bot to constantly move back and forth (unstable)
-        if (distanceFromBot > 200 && liveBots.length != 0) {
+        if (distanceFromBot > 120 && liveBots.length != 0) {
             System.out.println("dfb: " + distanceFromBot);
             //System.out.println("Live bots: " + liveBots.length + " Dead: " + deadBots.length);
             // Ensuring no bullets are nearby before aligning the bot
             if (!isStuck && !bulletClose) {
                 // if my bot is NOT aligned with the battle bot (not accurate since the bot is always moving therefore I use range)
                 // if aligned over x axis
-                if (me.getX() - Bot.RADIUS >= closestBot.getX() - Bot.RADIUS - 10 && me.getX() - Bot.RADIUS <= closestBot.getX() - Bot.RADIUS + 10) {
+                if (me.getX() >= closestBot.getX() - 80 && me.getX() <= closestBot.getX() + 80) {
                     //System.out.println("HERE~~");
                     if (dispY > 0) {
                         //System.out.println("Need to move DOWN");
@@ -238,17 +236,17 @@ public class GornikBot extends Bot {
 
                     // if the bot is not "aligned" move on x axis, then if is at a certain range from the bot, shoot
                 } else {
-                    if (!(me.getY() - Bot.RADIUS >= closestBot.getY() - Bot.RADIUS - 20 && me.getY() - Bot.RADIUS <= closestBot.getY() - Bot.RADIUS + 20)) {
-                        if (dispX > 0) {
-                            //System.out.println("Need to move right");
-                            return BattleBotArena.RIGHT;
+                    if (dispX > 0) {
+                        //System.out.println("Need to move right");
+                        return BattleBotArena.RIGHT;
+                        // FIX --> sometimes doesn't chase the opponent
 
-                        } else if (dispX < 0) {
-                            //System.out.println("Need to move left");
-                            return BattleBotArena.LEFT;
-                        }
+                    } else if (dispX < 0) {
+                        //System.out.println("Need to move left");
+                        return BattleBotArena.LEFT;
                     }
                 }
+
             }
         }
 
@@ -261,7 +259,7 @@ public class GornikBot extends Bot {
                     //System.out.println("SHOOT");
                     // checking from what direction i face the bot
                     // NOTE: use range to check whether the bot is above/below/front/behind+
-                    if (me.getX() - Bot.RADIUS >= closestBot.getX() - Bot.RADIUS - 20 && me.getX() - Bot.RADIUS <= closestBot.getX() - Bot.RADIUS + 20) { // aligned Y axis
+                    if (me.getX() >= closestBot.getX() - 15 && me.getX() <= closestBot.getX() + 15) { // aligned Y axis
                         //System.out.println("Aligned X");
                         if (shotOK && me.getY() + Bot.RADIUS > closestBot.getY() + Bot.RADIUS) {
                             System.out.println("He's above me");
@@ -271,7 +269,7 @@ public class GornikBot extends Bot {
                             //System.out.println("He's below me");
                             return BattleBotArena.FIREDOWN;
                         }
-                    } else if (me.getY() - Bot.RADIUS >= closestBot.getY() - Bot.RADIUS - 20 && me.getY() - Bot.RADIUS <= closestBot.getY() - Bot.RADIUS + 20) {
+                    } else if (me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15) {
                         System.out.println("Aligned Y");
                         if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) { // farther apart from the bot
                             System.out.println("He's to my left");
@@ -309,8 +307,6 @@ public class GornikBot extends Bot {
                 }
             }
         }
-
-
 
 
         return 0;
