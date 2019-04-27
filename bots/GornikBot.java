@@ -3,22 +3,26 @@ package bots;
 import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 
 import java.awt.*;
 
 public class GornikBot extends Bot {
-    // creating a bot helper object for later assistance
-    BotHelper pikachuHelper = new BotHelper();
+    // Creating a bot helper object to make a use of its methods
+    private BotHelper pikachuHelper = new BotHelper();
 
-    // variable to hold distance
+    // Setting up the danger zone range for my bot
     private static int disDanger = 60;
 
-    // variable to hold shooting range
-    private static int disShooting = 70;
+    // Setting up the shooting range for my bot
+    private static int disShooting = 100;
 
-    // variable to hold if a bullet is close
+    // Variable in charge of checking if a bullet is close to my bot
     private boolean bulletClose;
 
+    /**
+     * REMOVE
+     */
     //  stores last x and y to check whether im not moving or not
     double[] prevCoordinates = new double[2]; // 0. X, 1. Y
 
@@ -62,58 +66,60 @@ public class GornikBot extends Bot {
      * @param bullets  An array of all Bullet objects currently in play
      * @return A legal move (use the constants defined in BattleBotArena)
      */
-
-//    Can be later replaced.
-    /*
-        for(Bullet bullet: bullets) {
-        }
-        */
     @Override
     public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets) {
+        // Resetting the variable every time the method gets called
         bulletClose = false;
-        //System.out.println(me.getX());
 
-        // finding the closest bot to me
+        // Storing the closest bot to me in a variable
         BotInfo closestBot = pikachuHelper.findClosest(me, liveBots);
-        //Bullet bullet = pikachuHelper.findClosest(me, bullets);
 
-        // looping through all bullets in the world (I prefer to use this in case 2+ bullets are approaching the bot)
+        //************************************************************************************************
+        // Looping through all bullets in the world instead of just getting the closest bullet
+        // (in case 2+ bullets are approaching the bot simultaneously) and dodging them.
+        //************************************************************************************************
+
         for (Bullet bullet : bullets) {
-            // trying to dodge when a bullet is shot and is within the danger distance
+
+            // Trying to dodge when a bullet is shot and is within the danger zone range
             if (pikachuHelper.calcDistance(me.getX(), me.getY(), bullet.getX(), bullet.getY()) <= disDanger) {
+                // A bullet is nearby
                 bulletClose = true;
 
-                // bullet approaching from right or left (JUMPS TOO LATE)
+                // If bullet is approaching from the right or left
                 if (bullet.getX() >= me.getX() + Bot.RADIUS || bullet.getX() + Bot.RADIUS <= me.getX()) {
-                    //System.out.println("BULLET: " + bullet);
-                    //System.out.println("1. BULLET APPROACHING FROM RIGHT OR LEFT");
 
-                    // ensuring that only bullets that move horizontally are targeted
+                    // Ensuring that only bullets that move horizontally are targeted
                     if (bullet.getXSpeed() != 0 && bullet.getYSpeed() == 0) {
 
-                        // if me is above bullet
+                        // If my bot is above the bullet
                         if (me.getY() + Bot.RADIUS > bullet.getY()) {
-                            //System.out.println("1. DOWN");
+                            // Dodging up
                             return BattleBotArena.DOWN;
-                        } else {
-                            //System.out.println("1. UP");
+                        }
+
+                        // If my bot is below the bullet
+                        else {
+                            // Dodging down
                             return BattleBotArena.UP;
                         }
                     }
                 }
 
-                // if bot is at the edge of the screen (left/right edge)
+                // If bullet is approaching from above or below
                 if (bullet.getY() >= me.getY() + Bot.RADIUS || bullet.getY() + Bot.RADIUS <= me.getY()) {
-                    //System.out.println("2. BULLET APPROACHING FROM UP OR DOWN");
 
-                    // making sure bullet is being shot vertically
+                    // Ensuring that only bullets that move vertically are targeted
                     if (bullet.getYSpeed() != 0 && bullet.getXSpeed() == 0) {
 
-                        // if approaching from above and to my right (moving in opp direction)
+                        // If the bullet is approaching from above and to my left
                         if (me.getX() + Bot.RADIUS > bullet.getX()) {
-                            //System.out.println("****");
+
+                            // Moving in opposite direction
                             return BattleBotArena.RIGHT;
-                        } else {
+                        }
+                        // If the bullet is approaching from above and to my right
+                        else {
                             return BattleBotArena.LEFT;
                         }
                     }
@@ -122,102 +128,123 @@ public class GornikBot extends Bot {
 
         }
 
-        /**
-         * STUCK?
-         */
+        //************************************************************************************************
+        // If my bot is stuck at either edge of the screen, loosing it free by moving it to the
+        // opposite direction.
+        //************************************************************************************************
 
-        // if my bot is stuck either at the edge of the screen or to a different bot
-        // Moving bot if trapped at either the left or right edges of the screen [NEED TO BE FIXED]
+        // Ensuring that no bullets are nearby before checking if the bot is stuck
         if (!bulletClose) {
+
+            // If stuck at the left edge of the screen, moving to the right
             if (me.getX() <= BattleBotArena.LEFT_EDGE + 5) {
-                System.out.println("AT LEFT EDGE");
                 return BattleBotArena.RIGHT;
             }
 
-             if (me.getX() >= BattleBotArena.RIGHT_EDGE - 35) {
-                // if theres a bot to my left while stuck
-//                if (closestBot.getX() < me.getX()) {
-//                    System.out.println("BOT TO MY LEFT MOVING UP");
-//                    return BattleBotArena.UP;
-//                }
-                System.out.println("AT RIGHT EDGE");
+            // If stuck at the right edge of the screen, moving to the left
+            if (me.getX() >= BattleBotArena.RIGHT_EDGE - 35) {
                 return BattleBotArena.LEFT;
-            }
 
-            else if (me.getY() <= BattleBotArena.TOP_EDGE + 5) {
-                 System.out.println("AT TOP EDGE");
+                // If stuck at the top edge of the screen, moving down
+            } else if (me.getY() <= BattleBotArena.TOP_EDGE + 5) {
                 return BattleBotArena.DOWN;
-            }
 
-            else if (me.getY() >= BattleBotArena.BOTTOM_EDGE - 35) {
-                 System.out.println("AT BOTTOM EDGE");
+                // If stuck at the bottom edge of the screen, moving up
+            } else if (me.getY() >= BattleBotArena.BOTTOM_EDGE - 35) {
                 return BattleBotArena.UP;
             }
         }
 
-        System.out.println("PREV X: " + prevCoordinates[0] + "X NOW: " + me.getX());
-        System.out.println("PREV Y: " + prevCoordinates[1] + "Y NOW: " + me.getY());
+        //************************************************************************************************
+        // If my bot is stuck to a different bot, breaking it free.
+        //************************************************************************************************
 
-        //System.out.println("D: " + pikachuHelper.calcDistance(me.getX(), me.getY(), stuckBot.getX(), stuckBot.getY()));
-        //checking if im stuck or if im not moving
-        if (BotHelper.manhattanDist(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS * 2 + 10 ) { //|| prevCoordinates[0] == me.getX() && prevCoordinates[1] == me.getY()
-            System.out.println("STUCK!");
-
+        //checking if im stuck or if im not moving [ FIX ]
+        if (BotHelper.manhattanDist(me.getX(), me.getY(), closestBot.getX(), closestBot.getY()) <= Bot.RADIUS * 2 + 10) { //|| prevCoordinates[0] == me.getX() && prevCoordinates[1] == me.getY()
+            // Ensuring that no bullets are nearby before breaking free
             if (!bulletClose) {
-//                         checking what direction the bot facing me from
-                if (me.getX() + Bot.RADIUS > closestBot.getX()) {
-                    // if bot is on my left turning away
 
-                    // ensuring the i'm not at the edge of the screen
-                    //if()
+                // Checking if the bot approached my bot from either the left or right before getting unstuck
+                if (closestBot.getLastMove() == BattleBotArena.LEFT || closestBot.getLastMove() == BattleBotArena.RIGHT) {
 
-                    System.out.println("HE'S STUCK TO MY LEFT, MOVING RIGHT!");
-                    return BattleBotArena.RIGHT;
-                } else {
-                    System.out.println("HE'S STUCK TO MY RIGHT, MOVING LEFT!");
-                    return BattleBotArena.LEFT;
+                    // Determining if the bot is stuck to my left and moving to the opposite direction
+                    if (me.getX() + Bot.RADIUS > closestBot.getX()) {
+                        return BattleBotArena.RIGHT;
+                    }
+
+                    // Determining if the bot is stuck to my right and moving to the opposite direction
+                    else {
+                        return BattleBotArena.LEFT;
+                    }
+                }
+            }
+
+            // Checking if the bot approached my bot from either above or below before getting unstuck
+            else {
+
+                // Determining if the bot is stuck above me and moving down
+                if (me.getY() + Bot.RADIUS > closestBot.getY()) {
+                    return BattleBotArena.DOWN;
+                }
+
+                // Determining if the bot is stuck below me and moving up
+                else {
+                    return BattleBotArena.UP;
                 }
             }
         }
 
-        // Chasing other bots if they're within range
+        //************************************************************************************************
+        // Setting up variables used to determine what direction my bot needs to move in to
+        // be at its shooting range and following the bot.
+
+        // My bot plays safe since it waits until the other bot aligns with my bot and only
+        // then shoots to maximize success rate
+        //************************************************************************************************
+
+        // Calculating the X displacement between my bot and the target bot
         double dispX = pikachuHelper.calcDisplacement(me.getX() + Bot.RADIUS, closestBot.getX());
+
+        // Calculating the Y displacement between my bot and the target bot
         double dispY = pikachuHelper.calcDisplacement(me.getY() + Bot.RADIUS, closestBot.getY());
+
+        // Calculating the distance between my bot and the target bot
         double distanceFromBot = pikachuHelper.calcDistance(me.getX() + Bot.RADIUS, me.getY() +
                 Bot.RADIUS, closestBot.getX(), closestBot.getY());
 
-        //System.out.println("Distance is: " + distanceFromBot);
-        //System.out.println("My Y: " + me.getY() + " BattleBot: " + closestBot.getY());
+        // If my bot is within shooting range
+        if (distanceFromBot > disShooting && liveBots.length != 0) {
 
-        // while NOT at a distance of 50 from the bot // Note: liveBots is always the same even after overheating
-        // which causes my bot to constantly move back and forth (unstable)
-        if (distanceFromBot > 100 && liveBots.length != 0) {
-//            System.out.println("dfb: " + distanceFromBot);
-            //System.out.println("Live bots: " + liveBots.length + " Dead: " + deadBots.length);
-            // Ensuring no bullets are nearby before aligning the bot
+            // Ensuring no bullets are nearby before aligning following other bots
             if (!bulletClose) {
-                // if my bot is NOT aligned with the battle bot (not accurate since the bot is always moving therefore I use range)
-                // if aligned over x axis
+
+                // If my bot has almost the "same" Y value (using range of 80 since the target bot is mostly on
+                // the move) as the target bot, moving accordingly (When bots are aligned over the X axis,
+                // they have the same Y value)
                 if (me.getX() >= closestBot.getX() - 80 && me.getX() <= closestBot.getX() + 80) {
-                    //System.out.println("HERE~~");
+
+                    // If my bot's Y displacement is greater than 0 which means the target bot is below me,
+                    // follow it until within shooting range
                     if (dispY > 0) {
-                        //System.out.println("Need to move DOWN");
                         return BattleBotArena.DOWN;
 
+                        // If my bot's Y displacement is smaller than 0 which means the target bot is above me,
+                        // follow it until within shooting range
                     } else if (dispY < 0) {
-                        //System.out.println("Need to move UP");
                         return BattleBotArena.UP;
                     }
 
-                    // if the bot is not "aligned" move on x axis, then if is at a certain range from the bot, shoot
+                    // If the bots do not have almost the "same" Y value, move accordingly
                 } else {
-                    if (dispX > 0) {
-                        //System.out.println("Need to move right");
-                        return BattleBotArena.RIGHT;
-                        // FIX --> sometimes doesn't chase the opponent
 
+                    // If my bot's X displacement is greater than 0 which means the target bot is to my right
+                    // follow it until within shooting range
+                    if (dispX > 0) {
+                        return BattleBotArena.RIGHT;
+
+                        // If my bot's X displacement is smaller than 0 which means the target bot is to my left,
+                        // follow it until within shooting range
                     } else if (dispX < 0) {
-                        //System.out.println("Need to move left");
                         return BattleBotArena.LEFT;
                     }
                 }
@@ -225,60 +252,38 @@ public class GornikBot extends Bot {
             }
         }
 
-        // shooting occurs here once the required distance has met
+        // Shooting occurs here once the required distance has met
         else {
-                    //System.out.println("SHOOT");
-                    // checking from what direction i face the bot
-                    // NOTE: use range to check whether the bot is above/below/front/behind+
-                    if (me.getX() >= closestBot.getX() - 15 && me.getX() <= closestBot.getX() + 15) { // aligned Y axis
-                        //System.out.println("Aligned X");
-                        if (shotOK && me.getY() + Bot.RADIUS > closestBot.getY() + Bot.RADIUS) {
-                            System.out.println("He's above me");
-                            return BattleBotArena.FIREUP;
+            // If my bot has almost the "same" Y value (using a range of 15 to maximize the accuracy of shot)
+            // as the target bot, moving accordingly (When bots are aligned over the X axis,
+            // they have almost the same Y value)
 
-                        } else if (shotOK && me.getY() + Bot.RADIUS < closestBot.getY() + Bot.RADIUS) {
-                            //System.out.println("He's below me");
-                            return BattleBotArena.FIREDOWN;
-                        }
-                    } else if (me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15) {
-                        //System.out.println("Aligned Y");
-                        if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) { // farther apart from the bot
-                            System.out.println("He's to my left");
-                            return BattleBotArena.FIRELEFT;
+            if (me.getX() >= closestBot.getX() - 15 && me.getX() <= closestBot.getX() + 15) { // aligned Y axis
+                // If the bot is above me, shoot upwards
+                if (shotOK && me.getY() + Bot.RADIUS > closestBot.getY() + Bot.RADIUS) {
+                    return BattleBotArena.FIREUP;
 
-                        } else if (shotOK && me.getX() + Bot.RADIUS < closestBot.getX() + Bot.RADIUS) {
-                            System.out.println("He's to my right");
-                            return BattleBotArena.FIRERIGHT;
-                        }
-                    }
+                    // If the bot is below me, shoot downwards
+                } else if (shotOK && me.getY() + Bot.RADIUS < closestBot.getY() + Bot.RADIUS) {
+                    return BattleBotArena.FIREDOWN;
+                }
 
-                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                // If my bot has almost the "same" X value (using a range of 15 to maximize the accuracy of shot)
+                // as the target bot, moving accordingly (When bots are aligned over the Y axis,
+                // they have almost the same X value)
+            } else if (me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15) {
 
-                    // checking if the bot is moving horizontally or vertically
-//                    if (closestBot.getLastMove() == BattleBotArena.UP || closestBot.getLastMove() == BattleBotArena.DOWN) {
-//                        if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX()) { // farther apart from the bot
-//                            System.out.println("He's to my left");
-//                            return BattleBotArena.FIRELEFT;
-//
-//                        } else if (shotOK && me.getX() + Bot.RADIUS < closestBot.getX()) {
-//                            System.out.println("He's to my right");
-//                            return BattleBotArena.FIRERIGHT;
-//                        }
-//                    } else {
-//
-//                        if (shotOK && me.getY() + Bot.RADIUS > closestBot.getY()) {
-//                            System.out.println("He's above me");
-//                            return BattleBotArena.FIREUP;
-//
-//                        } else if (shotOK && me.getY() + Bot.RADIUS < closestBot.getY()) {
-//                            System.out.println("He's below me");
-//                            return BattleBotArena.FIREDOWN;
-//                        }
-//                    }
+                // If the bot is to my left, shoot to its direction
+                if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) {
+                    return BattleBotArena.FIRELEFT;
+
+                    // If the bot is to my right, shoot to its direction
+                } else if (shotOK && me.getX() + Bot.RADIUS < closestBot.getX() + Bot.RADIUS) {
+                    return BattleBotArena.FIRERIGHT;
+                }
+            }
         }
 
-        prevCoordinates[0] = me.getX();
-        prevCoordinates[1] = me.getY();
         return 0;
     }
 
@@ -307,7 +312,7 @@ public class GornikBot extends Bot {
      */
     @Override
     public String getName() {
-        return null;
+        return "Pikachu";
     }
 
     /**
@@ -321,7 +326,7 @@ public class GornikBot extends Bot {
      */
     @Override
     public String getTeamName() {
-        return null;
+        return "Chiefs";
     }
 
     /**
