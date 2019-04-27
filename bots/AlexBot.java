@@ -13,6 +13,9 @@ import java.util.ArrayList;
  * will also check the surroundings for a dead bot and to move in the other direction.
  * If there is no danger to be hit by bullet, then Bot can fire its own bullet, towards where closest
  * enemy bot will be within a double radius of the Bot(it increases chance of enemy bot will get hit - since we must conserve bullets)
+ *
+ *  @author Alexandra Lomovtseva
+ *  @version 1.0 (Apr 27, 2019)
  */
 public class AlexBot extends Bot {
 
@@ -65,8 +68,7 @@ public class AlexBot extends Bot {
     @Override
     public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets) {
 
-        for (int i = 0; i < bullets.length; i++) {
-            Bullet current = bullets[i];
+        for (Bullet current : bullets) {
             if (bulletComingForUS(me.getX(), me.getY(), current.getX(), current.getY(), current.getYSpeed())) {
                 int deadBotQuadrant = closestBotQuadrant(me, deadBots);
                 if (deadBotQuadrant == RIGHT) {
@@ -93,8 +95,7 @@ public class AlexBot extends Bot {
      * @return the closest bot quadrant around our bot
      */
     private int closestBotQuadrant(BotInfo me, BotInfo[] bots) {
-        for (int i = 0; i < bots.length; i++) {
-            BotInfo current = bots[i];
+        for (BotInfo current : bots) {
             if (!targets.contains(current)) {
                 int quadrant = determineQuadrant(me.getX(), me.getY(), current.getX(), current.getY());
                 if (quadrant != NONE) {
@@ -134,18 +135,18 @@ public class AlexBot extends Bot {
      */
     private int determineQuadrant(double botX, double botY, double otherBotX, double otherBotY) {
         if (botX <= otherBotX && botX + Bot.RADIUS * 2 >= otherBotX) {
-            if (botY - Bot.RADIUS * 2 >= otherBotY) {
+            if (botY - Bot.RADIUS * 1.5 >= otherBotY) {
                 return UP;
             }
-            if (botY + Bot.RADIUS * 2 >= otherBotY) {
+            if (botY + Bot.RADIUS * 3.5 >= otherBotY) {
                 return DOWN;
             }
         }
         if (botY <= otherBotY && botY + Bot.RADIUS * 2 >= otherBotY) {
-            if (botX - Bot.RADIUS * 2 >= otherBotX) {
+            if (botX - Bot.RADIUS * 1.5 >= otherBotX) {
                 return LEFT;
             }
-            if (botX + Bot.RADIUS * 2 >= otherBotX) {
+            if (botX + Bot.RADIUS * 3.5 >= otherBotX) {
                 return RIGHT;
             }
         }
