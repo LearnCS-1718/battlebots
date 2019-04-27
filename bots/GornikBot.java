@@ -3,7 +3,6 @@ package bots;
 import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 
 import java.awt.*;
 
