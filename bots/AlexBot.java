@@ -135,18 +135,18 @@ public class AlexBot extends Bot {
      */
     private int determineQuadrant(double botX, double botY, double otherBotX, double otherBotY) {
         if (botX <= otherBotX && botX + Bot.RADIUS * 2 >= otherBotX) {
-            if (botY - Bot.RADIUS * 1.5 >= otherBotY) {
+            if (botY - Bot.RADIUS * 2.5 >= otherBotY) {
                 return UP;
             }
-            if (botY + Bot.RADIUS * 3.5 >= otherBotY) {
+            if (botY + Bot.RADIUS * 4.5 >= otherBotY) {
                 return DOWN;
             }
         }
         if (botY <= otherBotY && botY + Bot.RADIUS * 2 >= otherBotY) {
-            if (botX - Bot.RADIUS * 1.5 >= otherBotX) {
+            if (botX - Bot.RADIUS * 2.5 >= otherBotX) {
                 return LEFT;
             }
-            if (botX + Bot.RADIUS * 3.5 >= otherBotX) {
+            if (botX + Bot.RADIUS * 4.5 >= otherBotX) {
                 return RIGHT;
             }
         }
