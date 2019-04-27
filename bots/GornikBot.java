@@ -20,12 +20,6 @@ public class GornikBot extends Bot {
     private boolean bulletClose;
 
     /**
-     * REMOVE
-     */
-    //  stores last x and y to check whether im not moving or not
-    double[] prevCoordinates = new double[2]; // 0. X, 1. Y
-
-    /**
      * This method is called at the beginning of each round. Use it to perform
      * any initialization that you require when starting a new round.
      */
@@ -273,7 +267,7 @@ public class GornikBot extends Bot {
             } else if (me.getY() >= closestBot.getY() - 15 && me.getY() <= closestBot.getY() + 15) {
 
                 // If the bot is to my left, shoot to its direction
-                if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) {
+                if (shotOK && me.getX() + Bot.RADIUS > closestBot.getX() + Bot.RADIUS) { // farther apart from the bot
                     return BattleBotArena.FIRELEFT;
 
                     // If the bot is to my right, shoot to its direction
