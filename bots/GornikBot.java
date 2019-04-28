@@ -10,6 +10,12 @@ public class GornikBot extends Bot {
     // Creating a bot helper object to make a use of its methods
     private BotHelper pikachuHelper = new BotHelper();
 
+    // Stores all the pictures that are used to reflect the bot's movement
+    Image up, down, left, right, current;
+
+    // Keeping a track of my bot's last move to select a picture to reflect the move
+    private int lastMove;
+
     // Setting up the danger zone range for my bot
     private static int disDanger = 60;
 
@@ -26,6 +32,15 @@ public class GornikBot extends Bot {
     @Override
     public void newRound() {
 
+    }
+
+    /**
+     * Stores the bot's last move in a variable to choose the appropriate
+     * picture to reflect its movement
+     * @param lastMoveIn Takes the bot's last move
+     */
+    private void setLastDir(int lastMoveIn) {
+        lastMove = lastMoveIn;
     }
 
     /**
@@ -109,16 +124,17 @@ public class GornikBot extends Bot {
                         if (me.getX() + Bot.RADIUS > bullet.getX()) {
 
                             // Moving in opposite direction
+                            setLastDir(BattleBotArena.RIGHT);
                             return BattleBotArena.RIGHT;
                         }
                         // If the bullet is approaching from above and to my right
                         else {
+                            setLastDir(BattleBotArena.LEFT);
                             return BattleBotArena.LEFT;
                         }
                     }
                 }
             }
-
         }
 
         //************************************************************************************************
@@ -131,19 +147,23 @@ public class GornikBot extends Bot {
 
             // If stuck at the left edge of the screen, moving to the right
             if (me.getX() <= BattleBotArena.LEFT_EDGE + 5) {
+                setLastDir(BattleBotArena.RIGHT);
                 return BattleBotArena.RIGHT;
             }
 
             // If stuck at the right edge of the screen, moving to the left
             if (me.getX() >= BattleBotArena.RIGHT_EDGE - 35) {
+                setLastDir(BattleBotArena.LEFT);
                 return BattleBotArena.LEFT;
 
                 // If stuck at the top edge of the screen, moving down
             } else if (me.getY() <= BattleBotArena.TOP_EDGE + 5) {
+                setLastDir(BattleBotArena.DOWN);
                 return BattleBotArena.DOWN;
 
                 // If stuck at the bottom edge of the screen, moving up
             } else if (me.getY() >= BattleBotArena.BOTTOM_EDGE - 35) {
+                setLastDir(BattleBotArena.UP);
                 return BattleBotArena.UP;
             }
         }
@@ -162,11 +182,13 @@ public class GornikBot extends Bot {
 
                     // Determining if the bot is stuck to my left and moving to the opposite direction
                     if (me.getX() + Bot.RADIUS > closestBot.getX()) {
+                        setLastDir(BattleBotArena.RIGHT);
                         return BattleBotArena.RIGHT;
                     }
 
                     // Determining if the bot is stuck to my right and moving to the opposite direction
                     else {
+                        setLastDir(BattleBotArena.LEFT);
                         return BattleBotArena.LEFT;
                     }
                 }
@@ -177,11 +199,13 @@ public class GornikBot extends Bot {
 
                 // Determining if the bot is stuck above me and moving down
                 if (me.getY() + Bot.RADIUS > closestBot.getY()) {
+                    setLastDir(BattleBotArena.DOWN);
                     return BattleBotArena.DOWN;
                 }
 
                 // Determining if the bot is stuck below me and moving up
                 else {
+                    setLastDir(BattleBotArena.UP);
                     return BattleBotArena.UP;
                 }
             }
@@ -219,11 +243,13 @@ public class GornikBot extends Bot {
                     // If my bot's Y displacement is greater than 0 which means the target bot is below me,
                     // follow it until within shooting range
                     if (dispY > 0) {
+                        setLastDir(BattleBotArena.DOWN);
                         return BattleBotArena.DOWN;
 
                         // If my bot's Y displacement is smaller than 0 which means the target bot is above me,
                         // follow it until within shooting range
                     } else if (dispY < 0) {
+                        setLastDir(BattleBotArena.UP);
                         return BattleBotArena.UP;
                     }
 
@@ -233,11 +259,13 @@ public class GornikBot extends Bot {
                     // If my bot's X displacement is greater than 0 which means the target bot is to my right
                     // follow it until within shooting range
                     if (dispX > 0) {
+                        setLastDir(BattleBotArena.RIGHT);
                         return BattleBotArena.RIGHT;
 
                         // If my bot's X displacement is smaller than 0 which means the target bot is to my left,
                         // follow it until within shooting range
                     } else if (dispX < 0) {
+                        setLastDir(BattleBotArena.LEFT);
                         return BattleBotArena.LEFT;
                     }
                 }
@@ -276,7 +304,6 @@ public class GornikBot extends Bot {
                 }
             }
         }
-
         return 0;
     }
 
@@ -293,8 +320,20 @@ public class GornikBot extends Bot {
      */
     @Override
     public void draw(Graphics g, int x, int y) {
-        g.setColor(Color.yellow);
-        g.fillRect(x + 2, y + 2, RADIUS * 2 - 4, RADIUS * 2 - 4);
+        if (lastMove == BattleBotArena.UP) {
+            current = up;
+
+        } else if (lastMove == BattleBotArena.LEFT) {
+            current = left;
+
+        } else if (lastMove == BattleBotArena.DOWN) {
+            current = down;
+        }
+        else if (lastMove == BattleBotArena.RIGHT) {
+            current = right;
+        }
+        // Updating the image to reflect the bot's direction of movement
+        g.drawImage(current, x, y, Bot.RADIUS * 2, Bot.RADIUS * 2, null);
     }
 
     /**
@@ -361,7 +400,9 @@ public class GornikBot extends Bot {
      */
     @Override
     public String[] imageNames() {
-        return new String[0];
+        String[] picPath = new String[]{"pikachu_up.png", "pikachu_down.png", "pikachu_right.png", "pikachu_left.png"};
+        return picPath;
+        //return new String[0];
     }
 
     /**
@@ -380,6 +421,10 @@ public class GornikBot extends Bot {
      */
     @Override
     public void loadedImages(Image[] images) {
-
+        up = images[0];
+        down = images[1];
+        right = images[2];
+        left = images[3];
+        current = up;
     }
 }
